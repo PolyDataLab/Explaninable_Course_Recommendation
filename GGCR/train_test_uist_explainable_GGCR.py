@@ -22,7 +22,7 @@ import preprocess_for_GAT
 from offered_courses_v2 import *
 #from topic_model_v2 import *
 import math
-from training_uist_GAT import * # type: ignore  # scp
+from training_GAT_uist import * # type: ignore  # scp
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import csr_matrix

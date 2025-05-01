@@ -1,0 +1,1 @@
+This folder contains python implementation of explainable course recommendation model (GGCR). 

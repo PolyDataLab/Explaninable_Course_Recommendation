@@ -1,7 +1,7 @@
 from sys import int_info
 import torch
 from torch.autograd import Variable
-import data_helpers_v28_oser as dh
+import data_helpers as dh
 
 #Dream model
 class DRModel(torch.nn.Module):
@@ -23,12 +23,6 @@ class DRModel(torch.nn.Module):
         self.rnn_lr = rnn_lr
         self.device = device
 
-        # Layer definitions
-        # Item embedding layer, item's index
-        # self.encode = torch.nn.Embedding(num_embeddings=config.num_product,
-        #                                  embedding_dim=config.embedding_dim,
-        #                                  padding_idx=0)
-        #self.encode = self.item_embeddings
         self.encode = torch.nn.Parameter(self.item_embeddings, requires_grad=True).to(device)  # False if I do not want to update item embeddings
         self.config.embedding_dim = self.item_embeddings.size(1)
         self.pool = {'avg': dh.pool_avg, 'max': dh.pool_max}[config.basket_pool_type]  # Pooling of basket
@@ -52,23 +46,16 @@ class DRModel(torch.nn.Module):
                                     bidirectional=False).to(device)
 
     def forward(self, x, lengths, hidden):
-        # Basket Encoding
-        # users' basket sequence
-        #ub_seqs = torch.Tensor(self.config.batch_size, self.config.seq_len, self.config.embedding_dim, device=self.device)
+        
         ub_seqs = torch.zeros(self.config.batch_size, self.config.seq_len, self.config.embedding_dim, device=self.device)
         for (i, user) in enumerate(x):  # shape of x: [batch_size, seq_len, indices of product]
             #embed_baskets = torch.Tensor(self.config.seq_len, self.config.embedding_dim, device=self.device)
             embed_baskets = torch.zeros(self.config.seq_len, self.config.embedding_dim, device=self.device)
 
             for (j, basket) in enumerate(user):  # shape of user: [seq_len, indices of product]
-                #basket = torch.LongTensor(basket).resize_(1, len(basket))
-                # basket = torch.tensor(basket, device = self.device).unsqueeze(0)
+                
                 basket = torch.tensor(basket, device = self.device).unsqueeze(0)
-                #basket = self.encode(torch.autograd.Variable(basket))  # shape: [1, len(basket), embedding_dim]
-                # basket = self.encode[basket] 
-                # basket = self.pool(basket, dim=1)
-                # basket = basket.reshape(self.config.embedding_dim)
-                # embed_baskets[j] = basket  # shape:  [seq_len, 1, embedding_dim]
+            
                 basket_emb = self.encode[basket]  # [1, len(basket), embedding_dim]
                 basket_pooled = self.pool(basket_emb, dim=1).reshape(self.config.embedding_dim)
                 embed_baskets[j] = basket_pooled

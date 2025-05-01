@@ -12,17 +12,17 @@ import data_helpers as dh
 from config import Config  # scp
 from rnn_model_GPU import DRModel
 import tensorflow as tf
-from dataprocess import *
+from dataprocess_v1 import *
 #from utils import *
 import utils
 from utils import *
 #from offered_courses import *
 import pandas as pd
-import preprocess_v4_dser
+import preprocess_for_GAT
 from offered_courses_v2 import *
 #from topic_model_v2 import *
 import math
-from training_GAT_add_fet_v28_keywords_tfidf_uist import * # type: ignore  # scp
+from training_uist_GAT import * # type: ignore  # scp
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import csr_matrix
@@ -914,11 +914,11 @@ def valid(offered_courses, reversed_item_dict, reversed_user_dict, item_dict, re
 
     logger.info("✔︎ Training data processing...")
     #test_data = dh.load_data(Config().TRAININGSET_DIR)
-    # valid_data = dh.load_data('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/valid_sample_without_target.json')
+    # valid_data = dh.load_data('./valid_sample_without_target.json')
 
     logger.info("✔︎ Test data processing...")
     #test_target = dh.load_data(Config().TESTSET_DIR)
-    #valid_target = dh.load_data('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/validation_target_set.json')
+    #valid_target = dh.load_data('./validation_target_set.json')
 
     logger.info("✔︎ Load negative sample...")
     with open(Config().NEG_SAMPLES, 'rb') as handle:
@@ -1275,29 +1275,29 @@ def test(offered_courses, reversed_item_dict, reversed_user_dict, item_dict, rev
 
 if __name__ == '__main__':
     start = time.time()
-    #train_data_aug = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Filtered_data/train_sample_augmented_CR.json', orient='records', lines= True)
-    train_data_unique = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/train_data_all_CR.json', orient='records', lines= True)
+    
+    train_data_unique = pd.read_json('./train_data_all.json', orient='records', lines= True)
     train_data_all, item_dict, user_dict, reversed_item_dict, reversed_user_dict = preprocess_train_data_part1(train_data_unique) 
     train_all, train_set_without_target, target_set, max_len = preprocess_train_data_part2(train_data_all) 
-    valid_data = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/valid_data_all_CR.json', orient='records', lines= True)
-    #valid_data_excluding_summer_term = remove_summer_term_from_valid(valid_data)
+    valid_data = pd.read_json('./valid_data_all.json', orient='records', lines= True)
+
     valid_data, user_dict2, reversed_user_dict2 = preprocess_valid_data_part1(valid_data, reversed_user_dict, item_dict)
     #term_dict_train, frequency_of_courses_train, count_course_avg_train, course_sd_main, course_number_terms = calculate_avg_n_actual_courses(train_data_unique, reversed_item_dict)
     #valid_data, user_dict2, reversed_user_dict2 = preprocess_valid_data_part1(valid_data_excluding_summer_term, reversed_user_dict, item_dict)
     valid_all, valid_set_without_target, valid_target = preprocess_valid_data_part2(valid_data)
-    test_data = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/test_data_all_CR.json', orient='records', lines= True)
+    test_data = pd.read_json('./test_data_all.json', orient='records', lines= True)
     test_data, user_dict3, reversed_user_dict3 = preprocess_test_data_part1(test_data, reversed_user_dict, item_dict, reversed_user_dict2)
     test_all, test_set_without_target, test_target = preprocess_test_data_part2(test_data)
 
     negative_sample(Config().NEG_SAMPLES, train_data_all, valid_set_without_target, test_set_without_target)
 
     #offered_courses = calculate_offered_courses(train_all)
-    offered_courses = offered_course_cal('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/all_data_CR.json')
+    offered_courses = offered_course_cal('./all_data.json')
     #train(offered_courses, train_set_without_target, reversed_item_dict, reversed_user_dict)
 
-    dataTrain, dataTest, dataTotal, item_list, item_dict, reversed_item_dict, one_hot_encoded_train, one_hot_encoded_df_train, item_dict_one_hot, reversed_item_dict_one_hot, user_dict_one_hot, one_hot_encoded_train2, user_dict_one_hot_train, reversed_user_dict_one_hot_train = preprocess_v4_dser.preprocess_data(train_data_unique)
+    dataTrain, dataTest, dataTotal, item_list, item_dict, reversed_item_dict, one_hot_encoded_train, one_hot_encoded_df_train, item_dict_one_hot, reversed_item_dict_one_hot, user_dict_one_hot, one_hot_encoded_train2, user_dict_one_hot_train, reversed_user_dict_one_hot_train = preprocess_for_GAT.preprocess_data(train_data_unique)
     num_items = one_hot_encoded_train.shape[1]
-    df = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/course_info_desc_keywords.json', orient='records', lines=True)
+    df = pd.read_json('./course_info_desc_keywords.json', orient='records', lines=True)
     one_hot_encoded_cat, one_hot_encoded_level, cat_dict_one_hot, level_dict_one_hot, reversed_dict_cat_to_idx, reversed_dict_level_to_idx, one_hot_df_cat, one_hot_df_level = convert_side_info_to_one_hot_encoding(df, reversed_item_dict_one_hot, num_items)
     window_s = 10
     #adj_mat, vocab_size = get_adj_matrix_text_v2(df, window_s, reversed_item_dict_one_hot)
@@ -1328,8 +1328,8 @@ if __name__ == '__main__':
     # num_fet = one_hot_encoded_cat.shape[1] + one_hot_encoded_level.shape[1]
     num_fet = num_cat_f + num_level_f + num_text_f
     device = torch.device("cpu")
-    #base_path = '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/saved_model_GAT_CDREAM_uis_text_ii_GRU_fin_attn_layer_v3/'
-    base_path = '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/saved_model_GAT_CDREAM_uis_text_GRU_avg_attn_layers_v3_keywords_tfidf/'
+
+    base_path = './saved_model_GAT_CDREAM_uis_text_GRU_avg_attn_layers_v3_keywords_tfidf/'
     all_results = []
     cnt3 = 0
     cnt4 = 1 # 0 
@@ -1378,7 +1378,7 @@ if __name__ == '__main__':
                                             logger.info("✔︎ The format of your input is legal, now loading to next step...")
 
                                             MODEL_DIR = dh.load_model_file(MODEL_checkpoint)
-                                            data_dir= '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/'
+                                            data_dir= './'
                                             output_dir = data_dir + "/output_dir"
                                             utils.create_folder(output_dir)
                                             output_path= output_dir+ "/valid_prediction_28_v11001.txt"
@@ -1712,11 +1712,11 @@ if __name__ == '__main__':
                                                 dict5["prior courses"] = v6[0]
                                                 dict5["similar item"] = v6[1]
                                                 explanation_sim_dict[k6] = dict5
-                                            with open("/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/explanation_paths_GAT_GRU_uist_50_sample9_v1_last_semester_items.json", "w") as json_file:
+                                            with open("./explanation_paths_GAT_GRU_uist_50_sample9_v1_last_semester_items.json", "w") as json_file:
                                                 json.dump(explanation_paths_dict, json_file, indent=4)
-                                            with open("/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/explanation_paths_collab_GAT_GRU_uist_50_sample9_v1_last_semester_items.json", "w") as json_file:
+                                            with open("./explanation_paths_collab_GAT_GRU_uist_50_sample9_v1_last_semester_items.json", "w") as json_file:
                                                 json.dump(explanation_paths_dict_collab, json_file, indent=4)
-                                            with open("/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/explanation_sim_GAT_GRU_uist_50_sample9_v1_last_semester_items.json", "w") as json_file:
+                                            with open("./explanation_sim_GAT_GRU_uist_50_sample9_v1_last_semester_items.json", "w") as json_file:
                                                 json.dump(explanation_sim_dict, json_file, indent=4)
 
                                             # print("Explanation paths saved to explanation_paths_v9_200_samples.json")
@@ -1775,7 +1775,7 @@ if __name__ == '__main__':
                                                     changed_rec_cnt_sim_50 += 1
 
                                             fidelity_plus_sim, original_recall_sim, perturbed_recall_sim, fidelity_rank_sim, avg_rank_org_sim, avg_rank_per_sim, ndcg_original_explained_item_sim, ndcg_perturbed_explained_item_sim, ndcg_original_all_rec_items_sim, ndcg_perturbed_all_rec_items_sim = fidelity_plus_measure_main_v2(ground_truth_items, original_rec_items, perturbed_rec_items_sim, rank_explained_rec_item_original, rank_explained_rec_item_perturbed_sim)
-                                            # with open("/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/explanation_paths_v11_sim.json", "w") as json_file:
+                                            # with open("./explanation_paths_v11_sim.json", "w") as json_file:
                                             #     json.dump(explanation_paths_dict, json_file, indent=4)
 
                                             # print("Explanation paths saved to explanation_paths_v11.json")
@@ -1836,7 +1836,7 @@ if __name__ == '__main__':
                                                     changed_rec_cnt_col_50 += 1
 
                                             fidelity_plus_col, original_recall_col, perturbed_recall_col, fidelity_rank_col, avg_rank_org_col, avg_rank_per_col, ndcg_original_explained_item_col, ndcg_perturbed_explained_item_col, ndcg_original_all_rec_items_col, ndcg_perturbed_all_rec_items_col = fidelity_plus_measure_main_v2(ground_truth_items, original_rec_items, perturbed_rec_items_col, rank_explained_rec_item_original, rank_explained_rec_item_perturbed_col)
-                                            # with open("/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/explanation_paths_v11_col.json", "w") as json_file:
+                                            # with open("./explanation_paths_v11_col.json", "w") as json_file:
                                             #     json.dump(explanation_paths_dict, json_file, indent=4)
 
                                             # print("Explanation paths saved to explanation_paths_v11.json")
@@ -1854,6 +1854,6 @@ if __name__ == '__main__':
                                             all_results.append(row1)
                                             all_results_df = pd.DataFrame(all_results, columns=['n_sample', 'n_layers', 'emb_dim', 'n_epochs', 'learning_rate', 'n_heads', 'edge_dropout', 'node_dropout', 'threshold_weight_edges_iw', 'rnn_layer_number', 'rnn_dropout', 'rnn_l_rate', 'train_recall', 'valid_recall', 'test_recall', 'percentage_of_at_least_one_cor_pred', 'percentage_of_at_least_two_cor_pred', 'test_recall_perturbed', 'fidelity_plus_recall', 'original_recall', 'perturbed_recall', 'per_inst_changed_rec', 'fidelity_ranking_explained_item', 'avg_rank_original', 'avg_rank_perturbed', 'ndcg_original_explained_item', 'ndcg_perturbed_explained_item', 'ndcg_original_all_rec_items', 'ndcg_perturbed_all_rec_items', 'test_recall_perturbed_sim', 'fidelity_plus_sim', 'original_recall_sim', 'perturbed_recall_sim', 'per_inst_changed_rec_sim', 'fidelity_rank_sim', 'avg_rank_org_sim', 'avg_rank_per_sim', 'ndcg_original_explained_item_sim', 'ndcg_perturbed_explained_item_sim', 'ndcg_original_all_rec_items_sim', 'ndcg_perturbed_all_rec_items_sim', 'test_recall_perturbed_col', 'fidelity_plus_col', 'original_recall_col', 'perturbed_recall_col', 'per_inst_changed_rec_col', 'fidelity_rank_col', 'avg_rank_org_col', 'avg_rank_per_col', 'ndcg_original_explained_item_col', 'ndcg_perturbed_explained_item_col', 'ndcg_original_all_rec_items_col', 'ndcg_perturbed_all_rec_items_col', 'cnt_same_items_removed_cfeat_path_sim'])
                                             
-                                            all_results_df.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/all_results_df_LLM_GAT_GRU_uist_keywords_tfidf_ckw_explain_50_sample9_v1_last_semester_items.json', orient='records', lines=True) 
-                                            all_results_df.to_csv('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/all_results_df_LLM_GAT_GRU_uist_keywords_tfidf_ckw_explain_50_sample9_v1_last_semester_items.csv') 
+                                            all_results_df.to_json('./all_results_df_LLM_GAT_GRU_uist_keywords_tfidf_ckw_explain_50_sample9_v1_last_semester_items.json', orient='records', lines=True) 
+                                            all_results_df.to_csv('./all_results_df_LLM_GAT_GRU_uist_keywords_tfidf_ckw_explain_50_sample9_v1_last_semester_items.csv') 
                                             

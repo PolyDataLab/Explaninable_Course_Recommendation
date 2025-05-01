@@ -2,7 +2,7 @@
 # adding one user at a time
 import time
 import pandas as pd
-from preprocess_v4_dser import *
+from preprocess_v1 import *
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -27,34 +27,6 @@ from torch_geometric.utils import degree, dropout_adj
 import scipy.sparse as sp
 from torch_geometric.utils import from_scipy_sparse_matrix
 from torch_geometric.nn import GATConv
-
-def measure_sequence_of_courses(data, reversed_item_dict):
-    #users = data.userID.values
-    #print(users)
-    #time_baskets = data.baskets.values
-    # item_list = []
-    # for baskets in data['baskets']:
-    #     for basket in baskets:
-    #         for item in basket:
-    #             if item not in item_list:
-    #                 item_list.append(item)
-    num_items = len(reversed_item_dict)
-    #sequence_dict = {}
-    #count_item= {}
-    #index1= 0
-    seq_matrix = np.zeros((num_items, num_items))
-    for baskets in data['baskets']:
-        for index1 in range(0, len(baskets)-1):
-            for index2 in range(index1+1, len(baskets)):
-                list1= baskets[index1]
-                list2= baskets[index2]
-                for item1 in list1:
-                    for item2 in list2:
-                        #sequence_dict[item1, item2]= sequence_dict.get((item1, item2),0)+ 1 
-                        seq_matrix[reversed_item_dict[item1]][reversed_item_dict[item2]] += 1
-
-    seq_matrix = normalize(seq_matrix, norm='l2') 
-    return seq_matrix
 
 def compute_tfidf_pmi(documents, window_size=10):
     """
@@ -105,15 +77,6 @@ def compute_tfidf_pmi(documents, window_size=10):
                 p_j = word_sums[j] / total_sum
                 pmi_matrix[i, j] = max(0, np.log(p_ij / (p_i * p_j)))  # PMI formula
     
-    # # Step 3: Combine TF-IDF and PMI into adjacency matrix
-    # tfidf_csr = tfidf_matrix.T  # (vocab_size, num_docs)
-    # adjacency_matrix = csr_matrix((vocab_size + tfidf_matrix.shape[0], vocab_size + tfidf_matrix.shape[0]))
-    
-    # # Fill in document-word (TF-IDF) and word-word (PMI)
-    # adjacency_matrix[:vocab_size, vocab_size:] = tfidf_csr
-    # adjacency_matrix[vocab_size:, :vocab_size] = tfidf_csr.T
-    # adjacency_matrix[:vocab_size, :vocab_size] = csr_matrix(pmi_matrix)
-    # tfidf_csr = tfidf_matrix  # (num_docs, vocab_size)
     tfidf_csr = csr_matrix(tfidf_matrix)
 
     # Create an adjacency matrix of the required shape
@@ -128,48 +91,6 @@ def compute_tfidf_pmi(documents, window_size=10):
 
     
     return adjacency_matrix, vocab_size, vocab_dict_idx_to_wrd, vocab_dict_wrd_to_idx
-
-def get_adj_matrix_text(data, window_s, reversed_item_dict_one_hot):
-
-    text_f_all = {}
-    for idx1, cid in enumerate(data["course_code"]):
-        #index = data[data['userID'] == user].index.values[0]
-        idx2 = reversed_item_dict_one_hot[cid] # cid to idx
-        # cid2 = data["course_code"][idx2]
-        cname2 = data["course_name"][idx2]
-        text_f = data["course_description"][idx2]
-        row1 = [cname2, text_f]
-        text_f_all[idx2] = row1
-        #text_f_all[idx2] = text_f
-
-        # cat_f = data["category"][idx1]
-        # level_f = data["level"][idx1]
-        # row1 = [cid, cat_f]
-        # row2 = [cid, str(level_f)]
-        # # cat_f_all.append(row1)
-        # # level_f_all.append(row2)
-        # cat_f_all[idx1] = row1
-        # level_f_all[idx1] = row2
-    text_f_all_sorted = dict(sorted(text_f_all.items(), key=lambda item: item[0], reverse=False))
-    text_f_all_new = list(text_f_all_sorted.values())
-    # item_descriptions = data['course_description'].dropna().tolist()
-   # item_ids = data['course_code'].dropna().tolist()
-    # item_names = data['course_name'].dropna().tolist()
-    item_descriptions = []
-    item_names = []
-    for list1 in text_f_all_new:
-        cname3, cdesc = list1
-        item_descriptions.append(cdesc)
-        item_names.append(cname3)
-
-    for it_desc_idx in range(len(item_descriptions)):
-        idx_substring = item_descriptions[it_desc_idx].find(item_names[it_desc_idx])
-        if idx_substring ==-1: # course name not found in course description
-            updated_it_desc = item_names[it_desc_idx]+ " "+ item_descriptions[it_desc_idx] # adding course name
-            item_descriptions[it_desc_idx] = updated_it_desc
-   
-    adj_mat, vocab_size, vocab_dict_idx_to_wrd, vocab_dict_wrd_to_idx = compute_tfidf_pmi(item_descriptions, window_size=window_s)
-    return adj_mat, vocab_size, vocab_dict_idx_to_wrd, vocab_dict_wrd_to_idx
 
 def get_adj_matrix_text_v2(data, reversed_item_dict_one_hot):
 
@@ -186,16 +107,7 @@ def get_adj_matrix_text_v2(data, reversed_item_dict_one_hot):
         # row1 = [cname2, concept_f]
         row1 = [cid2, concept_f]
         concept_f_all[idx2] = row1
-        #text_f_all[idx2] = text_f
-
-        # cat_f = data["category"][idx1]
-        # level_f = data["level"][idx1]
-        # row1 = [cid, cat_f]
-        # row2 = [cid, str(level_f)]
-        # # cat_f_all.append(row1)
-        # # level_f_all.append(row2)
-        # cat_f_all[idx1] = row1
-        # level_f_all[idx1] = row2
+        
     concept_f_all_sorted = dict(sorted(concept_f_all.items(), key=lambda item: item[0], reverse=False))
     concept_f_all_new = list(concept_f_all_sorted.values())
     # item_descriptions = data['course_description'].dropna().tolist()
@@ -232,13 +144,6 @@ def get_adj_matrix_text_v2(data, reversed_item_dict_one_hot):
     print("Binary Adjacency Matrix (Items x Concepts):")
     print(adj_matrix)
 
-    # Optional: Print concept labels for better readability
-    #import pandas as pd
-    #df = pd.DataFrame(adj_matrix, index=[f"Item_{i}" for i in range(num_items)], columns=all_concepts)
-    #print(df)
-
-   
-    #adj_mat, vocab_size = compute_tfidf_pmi(item_concepts, window_size=window_s)
     return adj_matrix, vocab_size, concept_to_idx, idx_to_concept
 
 def get_adj_matrix_text_v3(data, reversed_item_dict_one_hot, window_s):
@@ -252,81 +157,23 @@ def get_adj_matrix_text_v3(data, reversed_item_dict_one_hot, window_s):
         cid2 = data["course_code"][idx2]
         #text_f = data["course_description"][idx2]
         concept_f = data["concepts"][idx2]
-        #row1 = [cname2, text_f]
-        # row1 = [cname2, concept_f]
+    
         row1 = [cid2, concept_f]
         concept_f_all[idx2] = row1
-        #text_f_all[idx2] = text_f
-
-        # cat_f = data["category"][idx1]
-        # level_f = data["level"][idx1]
-        # row1 = [cid, cat_f]
-        # row2 = [cid, str(level_f)]
-        # # cat_f_all.append(row1)
-        # # level_f_all.append(row2)
-        # cat_f_all[idx1] = row1
-        # level_f_all[idx1] = row2
+        
     concept_f_all_sorted = dict(sorted(concept_f_all.items(), key=lambda item: item[0], reverse=False))
     concept_f_all_new = list(concept_f_all_sorted.values())
-    # item_descriptions = data['course_description'].dropna().tolist()
-   # item_ids = data['course_code'].dropna().tolist()
-    # item_names = data['course_name'].dropna().tolist()
-    # item_descriptions = []
-    # item_concepts = {}
-    # #item_names = []
-    # item_id = 0
-    # for list1 in concept_f_all_new:
-    #     cid3, cconcept = list1
-    #     item_concepts[cid3] = cconcept
-    #     item_id += 1
-    #     #item_names.append(cname3)
-    # # Get a sorted list of all unique concepts
-    # #all_concepts = sorted(set.union(*item_concepts.values()))
-    # all_concepts = sorted(set.union(*map(set, item_concepts.values())))
-
-    # num_items = len(item_concepts)
-    # num_concepts = len(all_concepts)
-    # vocab_size = num_concepts
-
-    # # Create an adjacency matrix (items x concepts)
-    # adj_matrix = np.zeros((num_items, num_concepts), dtype=int)
-
-    # # Fill the adjacency matrix
-    # concept_to_idx = {concept: idx for idx, concept in enumerate(all_concepts)}
-    # idx_to_concept = {idx: concept for idx, concept in enumerate(all_concepts)}
-
-    # for item, concepts in item_concepts.items():
-    #     for concept in concepts:
-    #         adj_matrix[reversed_item_dict_one_hot[item], concept_to_idx[concept]] = 1  # Mark connection
-
-    # print("Binary Adjacency Matrix (Items x Concepts):")
-    # print(adj_matrix)
-
-    # Optional: Print concept labels for better readability
-    #import pandas as pd
-    #df = pd.DataFrame(adj_matrix, index=[f"Item_{i}" for i in range(num_items)], columns=all_concepts)
-    #print(df)
-    item_descriptions = []
-    #item_names = []
+    
     for list1 in concept_f_all_new:
         cid3, cconcept = list1
         cdesc = ' '.join(cconcept)
         item_descriptions.append(cdesc)
         #item_names.append(cname3)
-
-    # for it_desc_idx in range(len(item_descriptions)):
-    #     idx_substring = item_descriptions[it_desc_idx].find(item_names[it_desc_idx])
-    #     if idx_substring ==-1: # course name not found in course description
-    #         updated_it_desc = item_names[it_desc_idx]+ " "+ item_descriptions[it_desc_idx] # adding course name
-    #         item_descriptions[it_desc_idx] = updated_it_desc
    
     adj_matrix, vocab_size, vocab_dict_idx_to_wrd, vocab_dict_wrd_to_idx = compute_tfidf_pmi(item_descriptions, window_size=window_s)
-
    
     #adj_mat, vocab_size = compute_tfidf_pmi(item_concepts, window_size=window_s)
     return adj_matrix, vocab_size, vocab_dict_idx_to_wrd, vocab_dict_wrd_to_idx
-
-
 
 def convert_to_one_hot_encoding_cat(data):
     # One-hot encode the 'interactions' column

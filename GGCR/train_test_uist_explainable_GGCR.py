@@ -8,11 +8,11 @@ import pickle
 import torch
 import numpy as np
 from math import ceil
-import data_helpers_v28_oser as dh
-from config_v28_v2_oser import Config  # scp
-from rnn_model_v28_GPU_oser import DRModel
+import data_helpers as dh
+from config import Config  # scp
+from rnn_model_GPU import DRModel
 import tensorflow as tf
-from dataprocess_v25_dser import *
+from dataprocess import *
 #from utils import *
 import utils
 from utils import *

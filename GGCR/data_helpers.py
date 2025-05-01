@@ -31,8 +31,8 @@ def load_data(input_file, flag=None):
 
 #loading model file
 def load_model_file(checkpoint_dir):
-    MODEL_DIR = '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/runs_v20/' + checkpoint_dir
-    #MODEL_DIR = checkpoint_dir
+    MODEL_DIR = './runs_v20/' + checkpoint_dir
+    
     names = [name for name in os.listdir(MODEL_DIR) if os.path.isfile(os.path.join(MODEL_DIR, name))]
     max_epoch = 0
     choose_model = ''
@@ -40,10 +40,9 @@ def load_model_file(checkpoint_dir):
         if int(name[6:8]) >= max_epoch:
             max_epoch = int(name[6:8])
             choose_model = name
-    MODEL_FILE = '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/runs_v20/' + checkpoint_dir + '/' + choose_model
+    MODEL_FILE = './runs_v20/' + checkpoint_dir + '/' + choose_model
     #MODEL_FILE = checkpoint_dir + '/' + choose_model
     return MODEL_FILE
-
 
 def sort_batch_of_lists(uids, batch_of_lists, lens, device):
     """Sort batch of lists according to len(list). Descending"""
@@ -71,8 +70,6 @@ def sort_batch_of_lists_2(uids, batch_of_lists, lens, last_batch_actual_size, de
 
     return uids, batch_of_lists, lens, prev_idx
 
-
-
 def pad_batch_of_lists(batch_of_lists, pad_len, device):
     """Pad batch of lists."""
     padded = [l + [[0]] * (pad_len - len(l)) for l in batch_of_lists]
@@ -82,50 +79,6 @@ def pad_batch_of_lists2(batch_of_lists, pad_len, device):
     padded = [l + [0] * (pad_len - len(l)) for l in batch_of_lists]
     padded = torch.tensor(padded, device = device)
     return padded
-
-# def batch_iter(data, batch_size, pad_len, device, shuffle=True):
-#     """
-#     Turn dataset into iterable batches.
-
-#     Args:
-#         data: The data
-#         batch_size: The size of the data batch
-#         pad_len: The padding length
-#         shuffle: Shuffle or not (default: True)
-#     Returns:
-#         A batch iterator for data set
-#     """
-#     data_size = len(data)
-#     num_batches_per_epoch = data_size // batch_size
-#     if shuffle:
-#         shuffled_data = data.sample(frac=1)
-#     else:
-#         shuffled_data = data
-
-#     for i in range(num_batches_per_epoch):
-#         #print(shuffled_data)
-#         uids = torch.tensor(shuffled_data.iloc[i * batch_size: (i + 1) * batch_size].userID.values, device=device)
-#         baskets = list(shuffled_data.iloc[i * batch_size: (i + 1) * batch_size].baskets.values)
-#         lens = torch.tensor(shuffled_data.iloc[i * batch_size: (i + 1) * batch_size].num_baskets.values, device=device)
-#         #uids = shuffled_data[i * batch_size: (i + 1) * batch_size].userID.values
-#         #baskets = list(shuffled_data[i * batch_size: (i + 1) * batch_size].baskets.values)
-#         #lens = shuffled_data[i * batch_size: (i + 1) * batch_size].num_baskets.values
-#         uids, baskets, lens, prev_idx = sort_batch_of_lists(uids, baskets, lens, device)  
-#         baskets = pad_batch_of_lists(baskets, pad_len, device)
-#         yield uids, baskets, lens, prev_idx
-
-#     if data_size % batch_size != 0:
-#         residual = [i for i in range(num_batches_per_epoch * batch_size, data_size)] + list(
-#             np.random.choice(data_size, batch_size - data_size % batch_size))
-#         # uids = shuffled_data.iloc[residual].userID.values
-#         # baskets = list(shuffled_data.iloc[residual].baskets.values)
-#         # lens = shuffled_data.iloc[residual].num_baskets.values
-#         uids = torch.tensor(shuffled_data.iloc[residual].userID.values, device=device)
-#         baskets = list(shuffled_data.iloc[residual].baskets.values)
-#         lens = torch.tensor(shuffled_data.iloc[residual].num_baskets.values, device=device)
-#         uids, baskets, lens, prev_idx = sort_batch_of_lists_2(uids, baskets, lens, data_size % batch_size, device)
-#         baskets = pad_batch_of_lists(baskets, pad_len, device)
-#         yield uids, baskets, lens, prev_idx
 
 def batch_iter(data, batch_size, pad_len, device, shuffle=True, seed_value=42):
     """
@@ -192,11 +145,8 @@ def batch_iter(data, batch_size, pad_len, device, shuffle=True, seed_value=42):
         baskets = pad_batch_of_lists(baskets, pad_len, device)
         yield uids, baskets, lens, prev_idx
 
-
-
 def pool_max(tensor, dim):
     return torch.max(tensor, dim)[0]
-
 
 def pool_avg(tensor, dim):
     return torch.mean(tensor, dim)

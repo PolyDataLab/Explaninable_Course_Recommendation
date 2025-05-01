@@ -89,11 +89,6 @@ def preprocess_train_data_part2(input_data):
 
 def preprocess_valid_data_part1(input_data, reversed_user_dict, item_dict): #
     data = input_data
-    # data["userID"] = data["userID"].fillna(-1).astype('int32')
-    # data=data[data["userID"]!=-1].reset_index(drop=True)
-    #itemIDs = {}
-    #user_dict ={}
-    #item_dict = {}
     index=0
     for baskets in data['baskets']:
         new_baskets = []
@@ -175,11 +170,7 @@ def preprocess_valid_data_part2(input_data):
 def preprocess_test_data_part1(input_data, reversed_user_dict, item_dict, reversed_user_dict2): #  
   
     data = input_data
-    #user_dict ={}
-    #item_dict = {}
-    # data["userID"] = data["userID"].fillna(-1).astype('int32')
-    # data=data[data["userID"]!=-1].reset_index(drop=True)
-    #itemIDs = {}
+    
     index=0
     for baskets in data['baskets']:
         new_baskets = []

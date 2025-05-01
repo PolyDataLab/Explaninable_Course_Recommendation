@@ -1,10 +1,10 @@
 class Config(object):
     def __init__(self):
-        self.TRAININGSET_DIR = '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/train_sample_all_v2.json'
-        self.VALIDATIONSET_DIR = '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/valid_sample_without_target_v2.json'
-        self.TESTSET_DIR = '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/target_set_v2.json'
-        self.NEG_SAMPLES = '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/neg_sample_v25.pickle'
-        self.MODEL_DIR = '/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/runs_v20/'
+        self.TRAININGSET_DIR = './train_sample_all_v2.json'
+        self.VALIDATIONSET_DIR = './valid_sample_without_target_v2.json'
+        self.TESTSET_DIR = './target_set_v2.json'
+        self.NEG_SAMPLES = './neg_sample_v25.pickle'
+        self.MODEL_DIR = './runs_v20/'
         self.cuda = False
         self.clip = 10
         #self.epochs = 200

@@ -1,3 +1,0 @@
-Implementation of baselines (Popularity, ItemKNN, NMF, PMF, LightFM) of course recommendation methods in MOOCs can be found here (baselines.ipynb): https://github.com/Big-God-Tianyuan/Baselines
-Implementaion of KEAM model is available in the same link: https://github.com/Big-God-Tianyuan/Baselines
-The code for UPGPR model is provided in: https://github.com/epfl-ml4ed/courserec

@@ -3,9 +3,6 @@
 import numpy as np
 import pandas as pd
 import time
-# from collections import Counter
-# import argparse
-# import pickle
 from tqdm import tqdm
 #from sklearn.model_selection import train_test_split
 import json
@@ -49,24 +46,9 @@ def convert_to_one_hot_encoding_valid_test(test_data_interactions, reversed_item
     return test_user_item_array, user_dict_one_hot, reversed_user_dict_one_hot
 
 def preprocess_data(input_data):
-    #data = pd.read_csv(input_file)
+    
     data = input_data
-    #sequence of semesters
-    #converting semester to timestamp to maintain the order of semesters
-    #data["timestamp"]=data["Semester"].transform(lambda x:x.replace("Spring-", "1").replace("Summer-","2").replace("Fall-","3"))
-    #data["timestamp"]=data["timestamp"].transform(lambda x:x[1:]+x[0])
-    #sorting
-    #data = data.sort_values(by="timestamp")
-    #data["itemID"]=data["itemID"].transform(lambda x:x.replace("CIS",""))
-    #print(data)
-    #data["itemID"]=data["itemID"].transform(lambda x: int(x))
-
-    #print(data["itemID"])
-    #baskets = data.groupby(['userID', 'timestamp'])['itemID'].apply(list).reset_index()
-    #baskets = baskets.groupby(['userID'])['itemID'].apply(list).reset_index()  #
-    #baskets.columns = ['userID', 'baskets']
-    #baskets['num_baskets'] = baskets.baskets.apply(len)
-    #data = shuffle(data)
+    
     itemIDs = {}
     index=0
     for baskets in data['baskets']:
@@ -147,14 +129,12 @@ def preprocess_data(input_data):
     
     target_set = pd.DataFrame(target_set, columns=['userID', 'baskets', 'last_semester'])
     
-    train_set.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/train_sample_updated_v3.json', orient='records', lines=True)
-    target_set.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/target_set_v3.json', orient='records', lines=True)
-    total_set.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/total_sample_updated_v3.json', orient='records', lines=True)
-    one_hot_encoded_df_train.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/one_hot_encoded_df_train.json', orient='records', lines=True)
-    one_hot_encoded_df_train.to_csv('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/one_hot_encoded_df_train.csv')
+    train_set.to_json('./train_sample_updated_v3.json', orient='records', lines=True)
+    target_set.to_json('./target_set_v3.json', orient='records', lines=True)
+    total_set.to_json('./total_sample_updated_v3.json', orient='records', lines=True)
+    one_hot_encoded_df_train.to_json('./one_hot_encoded_df_train.json', orient='records', lines=True)
+    one_hot_encoded_df_train.to_csv('./one_hot_encoded_df_train.csv')
     
-    #train_set.to_csv('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/data/train_sample_updated.csv')
-    #target_set.to_csv('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/data/target_set.csv')
     print("done!")
     #print("processing took {0:.1f} sec".format(time.time() - start))
     return train_set, target_set, total_set, item_list, itemIDs, reversed_item_dict, one_hot_encoded_train, one_hot_encoded_df_train, item_dict_one_hot, reversed_item_dict_one_hot, user_dict_one_hot, one_hot_encoded_train2, user_dict_one_hot_train, reversed_user_dict_one_hot_train
@@ -162,9 +142,7 @@ def preprocess_data(input_data):
 def preprocess_valid_data(input_data, item_list, reversed_item_dict_one_hot, num_users_train): #  
   
     data = input_data
-    # baskets = data.groupby(['userID', 'timestamp'])['itemID'].apply(list).reset_index()
-    # baskets = baskets.groupby(['userID'])['itemID'].apply(list).reset_index()  #
-    # baskets.columns = ['userID', 'baskets']
+   
 
     #baskets['num_baskets'] = baskets.baskets.apply(len)
     index=0
@@ -192,8 +170,7 @@ def preprocess_valid_data(input_data, item_list, reversed_item_dict_one_hot, num
     for user in users:
         #index = data[data['userID'] == user].index.values[0]
         b = data.iloc[index]['baskets'][0:]
-        #b = baskets.iloc[index]['baskets'][0:]
-        #if baskets.iloc[index]['num_baskets']>=2:
+       
         if data.iloc[index]['num_baskets']>=3:
             row = [user, b, data.iloc[index]['num_baskets'], data.iloc[index]['last_semester'], data.iloc[index]['timestamps'] ]
             test_all.append(row)
@@ -245,17 +222,14 @@ def preprocess_valid_data(input_data, item_list, reversed_item_dict_one_hot, num
         #if index==30: break
     valid_target_set = pd.DataFrame(test_target_set, columns=['userID', 'baskets', 'last_semester'])
    
-    valid_set_all.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/valid_sample_all_v3.json', orient='records', lines=True)
-    valid_set_without_target.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/valid_sample_without_target_v3.json', orient='records', lines=True)
-    valid_target_set.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/valid_target_set_v3.json', orient='records', lines=True)
+    valid_set_all.to_json('./valid_sample_all_v3.json', orient='records', lines=True)
+    valid_set_without_target.to_json('./valid_sample_without_target_v3.json', orient='records', lines=True)
+    valid_target_set.to_json('./valid_target_set_v3.json', orient='records', lines=True)
     return valid_set_without_target, valid_target_set, valid_set_all, one_hot_encoded_valid, user_dict_one_hot_valid, reversed_user_dict_one_hot_valid
 
 def preprocess_test_data(input_data, item_list, reversed_item_dict_one_hot, num_users_train): #  
   
     data = input_data
-    # baskets = data.groupby(['userID', 'timestamp'])['itemID'].apply(list).reset_index()
-    # baskets = baskets.groupby(['userID'])['itemID'].apply(list).reset_index()  #
-    # baskets.columns = ['userID', 'baskets']
 
     #baskets['num_baskets'] = baskets.baskets.apply(len)
     index=0
@@ -283,8 +257,7 @@ def preprocess_test_data(input_data, item_list, reversed_item_dict_one_hot, num_
     for user in users:
         #index = data[data['userID'] == user].index.values[0]
         b = data.iloc[index]['baskets'][0:]
-        #b = baskets.iloc[index]['baskets'][0:]
-        #if baskets.iloc[index]['num_baskets']>=2:
+        
         if data.iloc[index]['num_baskets']>=3:
             row = [user, b, data.iloc[index]['num_baskets'], data.iloc[index]['last_semester'], data.iloc[index]['timestamps']]
             test_all.append(row)
@@ -298,8 +271,7 @@ def preprocess_test_data(input_data, item_list, reversed_item_dict_one_hot, num_
     for user in users:
         #index = data[data['userID'] == user].index.values[0]
         b = data.iloc[index]['baskets'][0:-1]
-        #b = baskets.iloc[index]['baskets'][0:]
-        #if baskets.iloc[index]['num_baskets']>=2:
+        
         if data.iloc[index]['num_baskets']>=3:
             row = [user, b, data.iloc[index]['num_baskets']-1, data.iloc[index]['last_semester']]
             test_2.append(row)
@@ -336,37 +308,20 @@ def preprocess_test_data(input_data, item_list, reversed_item_dict_one_hot, num_
         #if index==30: break
     test_target_set = pd.DataFrame(test_target_set, columns=['userID', 'baskets', 'last_semester'])
    
-    test_set_all.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/test_sample_all_v3.json', orient='records', lines=True)
-    test_set_without_target.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/test_sample_without_target_v3.json', orient='records', lines=True)
-    test_target_set.to_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/Others/CDREAM_LGCN/test_target_set_v3.json', orient='records', lines=True)
+    test_set_all.to_json('./test_sample_all_v3.json', orient='records', lines=True)
+    test_set_without_target.to_json('./test_sample_without_target_v3.json', orient='records', lines=True)
+    test_target_set.to_json('./test_target_set_v3.json', orient='records', lines=True)
     return test_set_without_target, test_target_set, test_set_all, one_hot_encoded_test, user_dict_one_hot_test, reversed_user_dict_one_hot_test
 
 
 if __name__ == '__main__':
-    train_data = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/train_data_all_CR.json', orient='records', lines= True)
-    #train_data = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/train_data_all_without_summer.json', orient='records', lines= True)
+    train_data = pd.read_json('./train_data_all.json', orient='records', lines= True)
     train_set, target_set, total_set, item_list, item_dict, reversed_item_dict,  one_hot_encoded_train, one_hot_encoded_df_train, item_dict_one_hot, reversed_item_dict_one_hot, user_dict_one_hot, one_hot_encoded_train2, user_dict_one_hot_train, reversed_user_dict_one_hot_train = preprocess_data(train_data)
-    #print(reversed_item_dict)
-    #print(target_set)
-    #parser = argparse.ArgumentParser()
-    #parser.add_argument('--data_name', default='instacart')
-    #parser.add_argument('--thr_item', default=10, type=int)
-    #parser.add_argument('--thr_user', default=0, type=int)
-    #parser.add_argument('--subset_user', default=0.1, type=float)
-    #args = parser.parse_args()
-    
-    #if args.data_name == 'instacart':
-    #    parse_instacart(thr_i = args.thr_item, thr_u = args.thr_user, subset_user = args.subset_user)
-    valid_data = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/valid_data_all_CR.json', orient='records', lines= True)
-    #valid_data = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/valid_data_all_without_summer.json', orient='records', lines= True)
+    valid_data = pd.read_json('./valid_data_all.json', orient='records', lines= True)
     dataValid_prev, dataValid_target, dataValid_Total, one_hot_encoded_valid, user_dict_one_hot_valid, reversed_user_dict_one_hot_valid = preprocess_valid_data(valid_data, item_list, reversed_item_dict_one_hot, len(user_dict_one_hot))
-    test_data = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/test_data_all_CR.json', orient='records', lines= True)
-    #test_data = pd.read_json('/a/bear.cs.fiu.edu./disk/bear-b/users/mkhan149/Downloads/Experiments/test_data_all_without_summer.json', orient='records', lines= True)
+    test_data = pd.read_json('./test_data_all.json', orient='records', lines= True)
     dataTest_prev, dataTest_target, datatest_Total, one_hot_encoded_test, user_dict_one_hot_test, reversed_user_dict_one_hot_test = preprocess_test_data(test_data, item_list, reversed_item_dict_one_hot, len(user_dict_one_hot))
     #print(datatest_Total)
     print(item_dict_one_hot)
     print(one_hot_encoded_test)
     print(one_hot_encoded_valid.shape)
-    #cnt1 = 0
-    # for idx1 in one_hot_encoded_df_train['userID']:
-    #     print("userID: ", idx1)

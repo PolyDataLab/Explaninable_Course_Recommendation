@@ -1,0 +1,32 @@
+University dataset:
+For model training and evaluation, we partition the university dataset into training, validation, and test sets. The last three semesters are reserved for testing, the preceding three semesters for validation, and the rest for training. To ensure data quality, we exclude dropped courses, low-frequency courses appearing fewer than three times, and instances where students have a course history of fewer than three semesters. After preprocessing, the dataset consists of $14,070$, $2,743$, and $1,259$ instances in train, validation, and test sets, respectively, with a total of $618$ unique courses. Additionally, the dataset covers $151$ course categories spanning five course levels (from $1000$ to $5000$), along with a broad classification of subjects such as Computer Programming (COP) and Computer Applications (CAP), etc.
+
+MOOC dataset:
+MOOCCube contains over 700 courses, 200,000 learners, and 300,000 learner-course interactions spanning from 2017 to 2019. We preprocessed the data by filtering out learners with fewer than 5 interactions. After preprocessing, we have 34,916 students, 698 courses, and 273,072 student-course interactions. We split the dataset into a 70:10:20 ratio to use 70\%, 10\%, and 20\% courses for training, validation, and testing.
+
+Evaluation metrics:
+The formula to calculate Recall@$k$ for an instance is as follows: 
+ \begin{equation}
+      \text{Recall@}k = \frac{ \text{\# of relevant recommendations}}{k}
+ \end{equation}
+We report the average Recall@$k$ score over all the target semesters. 
+
+The equation to compute PHR@$k$ (or \%$1$+ rel score) is as follows:
+ \begin{equation}
+      \text{PHR@$k$} = \frac{ \text{\# instances with $\geq 1$ relevant recommendation}}{\text{\# total instances}} * 100  
+ \end{equation}
+
+ The formula to compute $\text{Fid}^+_\text{Rec}$ is as follows:
+ \begin{equation}
+     \text{Fid}^+_\text{Rec} = \frac{1}{N} \sum_{i=1}^N \left( f(x_i) - f(x_i \setminus \mathcal{T}^+(x_i)) \right),
+ \end{equation}
+ where $N$ is the number of samples, $f(x_i)$ is the model's recall score with the original input $x_i$,  $\mathcal{T}^+(x_i)$ is the set of most important edges, and $f(x_i \setminus \mathcal{T}^+(x_i))$ is the recall score with the input removing important edges. 
+
+ The equation to compute $\text{Fid}^+_\text{Rank}$ is as follows:
+ \begin{equation}
+     \text{Fid}^+_\text{Rank} = \frac{1}{N} \sum_{i=1}^N \left(  f(x_i \setminus \mathcal{T}^+(x_i)) - f(x_i) \right)
+ \end{equation}
+ In this case, $f(x_i)$ represents the original rank of the explained recommended course, while $f(x_i \setminus \mathcal{T}^+(x_i))$ denotes its rank after removing a prior course. Note that ranking begins at 1, with the first course in the list being the top recommendation.
+
+Hyperparameter settings:
+We incorporate different relations $\mathcal{R} = \{R_{sc}, R_{csi}, R_{cw}\}$ to create various KGs and develop models based on those KGs. This allows us to assess the significance of each relation in the course recommendation process. For the GAT module, we experiment with different hyperparameters, including embedding dimensions = [32, 64, 128, 256], the number of attention layers = [1, 2, 3, 4], attention heads = [1, 2, 4], learning rate = [0.2, 0.1, 0.01, 0.001], edge dropout rate= [0, 0.2], and node dropout rate = [0, 0.2]. The model is trained for [50, 100, 200, 300, 400] epochs. In addition to GAT, we evaluate other graph embedding techniques, including graph convolutional networks (GCN)\cite{kipf2016semi} and LightGCN\cite{he2020lightgcn}, using the same set of hyperparameters as GAT. For sequential modeling, we conduct experiments with both LSTM and GRU architectures. Since item embeddings are derived from the GAT model, the embedding dimensions remain consistent in the LSTM or GRU model. We explore the number of RNN layers = [1, 2, 3], learning rate = [0.01, 0.001], dropout rate = [0.3, 0.4, 0.5], and train the model for [10, 20] epochs.
